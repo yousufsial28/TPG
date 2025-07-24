@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Generator</title>
+    <style>
+        :root {
+            --primary: #4a6bff;
+            --secondary: #f5f7ff;
+            --dark: #2a2a2a;
+            --light: #ffffff;
+            --danger: #ff4757;
+            --success: #2ed573;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f0f2f5;
+            color: var(--dark);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            margin-bottom: 30px;
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #eee;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+            background-color: white;
+            padding: 20px;
+            border-radius: 0 5px 5px 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #3a5bef;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+        }
+        
+        .btn-danger:hover {
+            background-color: #ff3342;
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #25c768;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background-color: var(--secondary);
+            font-weight: 600;
+        }
+        
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+        
+        .action-btns {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btns button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        
+        /* Compact PDF Preview Styles */
+        #testPreview {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 10mm 15mm;
+            background-color: white;
+            border: double 6px #000;
+            box-sizing: border-box;
+            font-size: 14px;
+            line-height: 1.3;
+        }
+        
+        .preview-header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #000;
+        }
+        
+        .student-info {
+            text-align: right;
+            margin-bottom: 10px;
+        }
+        
+        .preview-section {
+            border: 1px solid #000;
+            padding: 8px;
+            margin-bottom: 10px;
+            page-break-inside: avoid;
+        }
+        
+        .preview-section h3 {
+            border-bottom: 1px solid #000;
+            padding-bottom: 3px;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        
+        .question {
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+        }
+        
+        /* Horizontal MCQ Options */
+        .mcq-options-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+            margin-left: 15px;
+        }
+        
+        .mcq-option {
+            border: 1px solid #000;
+            padding: 3px 8px;
+            border-radius: 3px;
+            background-color: #f5f5f5;
+            white-space: nowrap;
+            font-size: 0.95em;
+        }
+        
+        /* Font Size Controls */
+        .font-controls {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .font-size-slider {
+            flex-grow: 1;
+        }
+        
+        .font-size-value {
+            width: 50px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* Page Size Controls */
+        .page-size-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 15px 0;
+        }
+        
+        .size-input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .size-input-group input {
+            width: 80px;
+        }
+        
+        .size-input-group select {
+            width: 60px;
+        }
+        
+        .orientation-select {
+            grid-column: span 2;
+        }
+        
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .no-print {
+            display: block;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #testPreview, #testPreview * {
+                visibility: visible;
+            }
+            #testPreview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                margin: 0;
+                padding: 10mm 15mm;
+                border: double 6px #000;
+                box-shadow: none;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>Online Test Generator</h1>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="tabs no-print">
+            <div class="tab active" data-tab="admin">Admin Panel</div>
+            <div class="tab" data-tab="student">Student Panel</div>
+            <div class="tab" data-tab="preview">Test Preview</div>
+        </div>
+        
+        <!-- Admin Panel -->
+        <div id="admin" class="tab-content active">
+            <h2>Admin Panel</h2>
+            
+            <div class="form-group">
+                <label>Test Title</label>
+                <input type="text" id="testTitle" placeholder="Enter test title" value="Sample Test">
+            </div>
+            
+            <div class="form-group">
+                <label>Test Instructions</label>
+                <textarea id="testInstructions" placeholder="Enter test instructions">Answer all questions. Write your answers clearly.</textarea>
+            </div>
+            
+            <h3>MCQ Questions</h3>
+            <div class="form-group">
+                <label>Question</label>
+                <input type="text" id="mcqQuestion" placeholder="Enter MCQ question">
+            </div>
+            
+            <div class="form-group">
+                <label>Options (separate with comma)</label>
+                <input type="text" id="mcqOptions" placeholder="Option 1, Option 2, Option 3, Option 4">
+            </div>
+            
+            <div class="form-group">
+                <label>Correct Answer (option number)</label>
+                <input type="number" id="mcqCorrectAnswer" min="1" max="4" placeholder="1">
+            </div>
+            
+            <button id="addMcq">Add MCQ Question</button>
+            
+            <h3>Short Questions</h3>
+            <div class="form-group">
+                <label>Question</label>
+                <input type="text" id="shortQuestion" placeholder="Enter short question">
+            </div>
+            
+            <div class="form-group">
+                <label>Marks</label>
+                <input type="number" id="shortMarks" placeholder="Enter marks">
+            </div>
+            
+            <button id="addShort">Add Short Question</button>
+            
+            <h3>Long Questions</h3>
+            <div class="form-group">
+                <label>Question</label>
+                <input type="text" id="longQuestion" placeholder="Enter long question">
+            </div>
+            
+            <div class="form-group">
+                <label>Marks</label>
+                <input type="number" id="longMarks" placeholder="Enter marks">
+            </div>
+            
+            <button id="addLong">Add Long Question</button>
+            
+            <h3>Manage Questions</h3>
+            <div class="form-group">
+                <label>Question Type</label>
+                <select id="questionTypeSelect">
+                    <option value="mcq">MCQ Questions</option>
+                    <option value="short">Short Questions</option>
+                    <option value="long">Long Questions</option>
+                </select>
+            </div>
+            
+            <table id="questionsTable">
+                <thead>
+                    <tr>
+                        <th>Question</th>
+                        <th>Type</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="questionsList">
+                    <!-- Questions will be added here dynamically -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Student Panel -->
+        <div id="student" class="tab-content">
+            <h2>Student Information</h2>
+            
+            <div class="form-group">
+                <label>Student Name</label>
+                <input type="text" id="studentName" placeholder="Enter student name" value="John Doe">
+            </div>
+            
+            <div class="form-group">
+                <label>Roll Number</label>
+                <input type="text" id="rollNumber" placeholder="Enter roll number" value="12345">
+            </div>
+            
+            <!-- Font Size Controls -->
+            <div class="form-group">
+                <label>Font Size (1px-72px)</label>
+                <div class="font-controls">
+                    <input type="range" id="fontSizeSlider" class="font-size-slider" min="1" max="72" value="14">
+                    <span id="fontSizeValue" class="font-size-value">14px</span>
+                </div>
+            </div>
+            
+            <!-- Page Size Controls -->
+            <div class="form-group">
+                <label>Page Size</label>
+                <div class="page-size-controls">
+                    <div class="size-input-group">
+                        <input type="number" id="pageWidth" value="210" min="50" max="1000">
+                        <select id="widthUnit">
+                            <option value="mm">mm</option>
+                            <option value="px">px</option>
+                        </select>
+                        <span>Width</span>
+                    </div>
+                    <div class="size-input-group">
+                        <input type="number" id="pageHeight" value="297" min="50" max="1000">
+                        <select id="heightUnit">
+                            <option value="mm">mm</option>
+                            <option value="px">px</option>
+                        </select>
+                        <span>Height</span>
+                    </div>
+                    <div class="orientation-select">
+                        <label>
+                            <input type="radio" name="orientation" value="portrait" checked> Portrait
+                        </label>
+                        <label>
+                            <input type="radio" name="orientation" value="landscape"> Landscape
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="generateTest">Generate Test</button>
+        </div>
+        
+        <!-- Test Preview -->
+        <div id="preview" class="tab-content">
+            <h2 class="no-print">Test Preview</h2>
+            
+            <div id="testPreview">
+                <div class="preview-header">
+                    <h1 id="previewTestTitle">Sample Test Title</h1>
+                    <p id="previewTestInstructions">Sample test instructions go here.</p>
+                </div>
+                
+                <div class="student-info">
+                    <p><strong>Name:</strong> <span id="previewStudentName">John Doe</span></p>
+                    <p><strong>Roll No:</strong> <span id="previewRollNumber">12345</span></p>
+                </div>
+                
+                <div class="preview-section">
+                    <h3>Section A: Multiple Choice Questions</h3>
+                    <div id="previewMcqSection">
+                        <!-- MCQ questions will be added here -->
+                    </div>
+                </div>
+                
+                <div class="preview-section">
+                    <h3>Section B: Short Questions</h3>
+                    <div id="previewShortSection">
+                        <!-- Short questions will be added here -->
+                    </div>
+                </div>
+                
+                <div class="preview-section">
+                    <h3>Section C: Long Questions</h3>
+                    <div id="previewLongSection">
+                        <!-- Long questions will be added here -->
+                    </div>
+                </div>
+            </div>
+            
+            <button id="downloadPdf" class="no-print">Download as PDF</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof window.jspdf !== 'undefined') {
+                const { jsPDF } = window.jspdf;
+                
+                // Database to store questions
+                const testDatabase = {
+                    title: "Sample Test",
+                    instructions: "Answer all questions. Write your answers clearly.",
+                    mcqQuestions: [],
+                    shortQuestions: [],
+                    longQuestions: []
+                };
+                
+                // DOM Elements
+                const tabs = document.querySelectorAll('.tab');
+                const tabContents = document.querySelectorAll('.tab-content');
+                const fontSizeSlider = document.getElementById('fontSizeSlider');
+                const fontSizeValue = document.getElementById('fontSizeValue');
+                const pageWidthInput = document.getElementById('pageWidth');
+                const pageHeightInput = document.getElementById('pageHeight');
+                const widthUnitSelect = document.getElementById('widthUnit');
+                const heightUnitSelect = document.getElementById('heightUnit');
+                const orientationRadios = document.querySelectorAll('input[name="orientation"]');
+                
+                // Update font size display
+                if (fontSizeSlider && fontSizeValue) {
+                    fontSizeSlider.addEventListener('input', () => {
+                        fontSizeValue.textContent = `${fontSizeSlider.value}px`;
+                    });
+                }
+                
+                // Tab switching
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabId = tab.getAttribute('data-tab');
+                        
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tabContents.forEach(content => content.classList.remove('active'));
+                        
+                        tab.classList.add('active');
+                        document.getElementById(tabId).classList.add('active');
+                    });
+                });
+                
+                // Initialize form fields with database values
+                document.getElementById('testTitle').value = testDatabase.title;
+                document.getElementById('testInstructions').value = testDatabase.instructions;
+                
+                // Add MCQ Question
+                document.getElementById('addMcq').addEventListener('click', () => {
+                    const question = document.getElementById('mcqQuestion').value;
+                    const options = document.getElementById('mcqOptions').value.split(',').map(opt => opt.trim());
+                    const correctAnswer = parseInt(document.getElementById('mcqCorrectAnswer').value);
+                    
+                    if (question && options.length >= 2 && correctAnswer >= 1 && correctAnswer <= options.length) {
+                        testDatabase.mcqQuestions.push({
+                            question,
+                            options,
+                            correctAnswer
+                        });
+                        
+                        updateQuestionsTable();
+                        clearMcqForm();
+                    } else {
+                        alert('Please fill all fields correctly for MCQ question.');
+                    }
+                });
+                
+                // Add Short Question
+                document.getElementById('addShort').addEventListener('click', () => {
+                    const question = document.getElementById('shortQuestion').value;
+                    const marks = parseInt(document.getElementById('shortMarks').value);
+                    
+                    if (question && marks > 0) {
+                        testDatabase.shortQuestions.push({
+                            question,
+                            marks
+                        });
+                        
+                        updateQuestionsTable();
+                        clearShortForm();
+                    } else {
+                        alert('Please fill all fields correctly for short question.');
+                    }
+                });
+                
+                // Add Long Question
+                document.getElementById('addLong').addEventListener('click', () => {
+                    const question = document.getElementById('longQuestion').value;
+                    const marks = parseInt(document.getElementById('longMarks').value);
+                    
+                    if (question && marks > 0) {
+                        testDatabase.longQuestions.push({
+                            question,
+                            marks
+                        });
+                        
+                        updateQuestionsTable();
+                        clearLongForm();
+                    } else {
+                        alert('Please fill all fields correctly for long question.');
+                    }
+                });
+                
+                // Update Questions Table
+                function updateQuestionsTable() {
+                    const questionsList = document.getElementById('questionsList');
+                    if (!questionsList) return;
+                    
+                    questionsList.innerHTML = '';
+                    
+                    const questionType = document.getElementById('questionTypeSelect').value;
+                    let questions = [];
+                    
+                    if (questionType === 'mcq') {
+                        questions = testDatabase.mcqQuestions;
+                    } else if (questionType === 'short') {
+                        questions = testDatabase.shortQuestions;
+                    } else if (questionType === 'long') {
+                        questions = testDatabase.longQuestions;
+                    }
+                    
+                    questions.forEach((q, index) => {
+                        const row = document.createElement('tr');
+                        
+                        const questionCell = document.createElement('td');
+                        questionCell.textContent = q.question;
+                        
+                        const typeCell = document.createElement('td');
+                        typeCell.textContent = questionType.toUpperCase();
+                        
+                        const actionsCell = document.createElement('td');
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.classList.add('btn-danger');
+                        deleteBtn.addEventListener('click', () => deleteQuestion(questionType, index));
+                        
+                        actionsCell.appendChild(deleteBtn);
+                        
+                        row.appendChild(questionCell);
+                        row.appendChild(typeCell);
+                        row.appendChild(actionsCell);
+                        
+                        questionsList.appendChild(row);
+                    });
+                }
+                
+                // Delete Question
+                function deleteQuestion(type, index) {
+                    if (type === 'mcq') {
+                        testDatabase.mcqQuestions.splice(index, 1);
+                    } else if (type === 'short') {
+                        testDatabase.shortQuestions.splice(index, 1);
+                    } else if (type === 'long') {
+                        testDatabase.longQuestions.splice(index, 1);
+                    }
+                    
+                    updateQuestionsTable();
+                }
+                
+                // Clear Forms
+                function clearMcqForm() {
+                    document.getElementById('mcqQuestion').value = '';
+                    document.getElementById('mcqOptions').value = '';
+                    document.getElementById('mcqCorrectAnswer').value = '';
+                }
+                
+                function clearShortForm() {
+                    document.getElementById('shortQuestion').value = '';
+                    document.getElementById('shortMarks').value = '';
+                }
+                
+                function clearLongForm() {
+                    document.getElementById('longQuestion').value = '';
+                    document.getElementById('longMarks').value = '';
+                }
+                
+                // Question Type Select Change
+                document.getElementById('questionTypeSelect').addEventListener('change', updateQuestionsTable);
+                
+                // Generate Test with font size and page size adjustment
+                document.getElementById('generateTest').addEventListener('click', () => {
+                    const studentName = document.getElementById('studentName').value;
+                    const rollNumber = document.getElementById('rollNumber').value;
+                    const fontSize = `${fontSizeSlider.value}px`;
+                    
+                    // Get page size settings
+                    const pageWidth = parseFloat(pageWidthInput.value);
+                    const pageHeight = parseFloat(pageHeightInput.value);
+                    const widthUnit = widthUnitSelect.value;
+                    const heightUnit = heightUnitSelect.value;
+                    const orientation = document.querySelector('input[name="orientation"]:checked').value;
+                    
+                    // Update test info from admin panel
+                    testDatabase.title = document.getElementById('testTitle').value;
+                    testDatabase.instructions = document.getElementById('testInstructions').value;
+                    
+                    if (studentName && rollNumber) {
+                        // Update preview with student info
+                        document.getElementById('previewStudentName').textContent = studentName;
+                        document.getElementById('previewRollNumber').textContent = rollNumber;
+                        
+                        // Update preview with test info
+                        document.getElementById('previewTestTitle').textContent = testDatabase.title;
+                        document.getElementById('previewTestInstructions').textContent = testDatabase.instructions;
+                        
+                        // Apply selected font size to preview
+                        const preview = document.getElementById('testPreview');
+                        preview.style.fontSize = fontSize;
+                        preview.style.lineHeight = '1.3';
+                        
+                        // Apply page size settings
+                        const width = widthUnit === 'mm' ? `${pageWidth}mm` : `${pageWidth}px`;
+                        const height = heightUnit === 'mm' ? `${pageHeight}mm` : `${pageHeight}px`;
+                        preview.style.width = width;
+                        preview.style.minHeight = height;
+                        
+                        // Update MCQ section with horizontal options
+                        const mcqSection = document.getElementById('previewMcqSection');
+                        mcqSection.innerHTML = '';
+                        
+                        testDatabase.mcqQuestions.forEach((q, index) => {
+                            const questionDiv = document.createElement('div');
+                            questionDiv.classList.add('question');
+                            
+                            const questionText = document.createElement('p');
+                            questionText.innerHTML = `<strong>Q${index + 1}:</strong> ${q.question}`;
+                            questionDiv.appendChild(questionText);
+                            
+                            // Create container for horizontal options
+                            const optionsContainer = document.createElement('div');
+                            optionsContainer.classList.add('mcq-options-container');
+                            
+                            q.options.forEach((opt, optIndex) => {
+                                const option = document.createElement('div');
+                                option.classList.add('mcq-option');
+                                option.textContent = `${String.fromCharCode(97 + optIndex)}) ${opt}`;
+                                optionsContainer.appendChild(option);
+                            });
+                            
+                            questionDiv.appendChild(optionsContainer);
+                            mcqSection.appendChild(questionDiv);
+                        });
+                        
+                        // Update Short Questions section
+                        const shortSection = document.getElementById('previewShortSection');
+                        shortSection.innerHTML = '';
+                        
+                        testDatabase.shortQuestions.forEach((q, index) => {
+                            const questionDiv = document.createElement('div');
+                            questionDiv.classList.add('question');
+                            
+                            const questionText = document.createElement('p');
+                            questionText.innerHTML = `<strong>Q${index + 1}:</strong> ${q.question} <em>(${q.marks} marks)</em>`;
+                            
+                            questionDiv.appendChild(questionText);
+                            shortSection.appendChild(questionDiv);
+                        });
+                        
+                        // Update Long Questions section
+                        const longSection = document.getElementById('previewLongSection');
+                        longSection.innerHTML = '';
+                        
+                        testDatabase.longQuestions.forEach((q, index) => {
+                            const questionDiv = document.createElement('div');
+                            questionDiv.classList.add('question');
+                            
+                            const questionText = document.createElement('p');
+                            questionText.innerHTML = `<strong>Q${index + 1}:</strong> ${q.question} <em>(${q.marks} marks)</em>`;
+                            
+                            questionDiv.appendChild(questionText);
+                            longSection.appendChild(questionDiv);
+                        });
+                        
+                        // Switch to preview tab
+                        document.querySelector('.tab[data-tab="preview"]').click();
+                    } else {
+                        alert('Please enter student name and roll number.');
+                    }
+                });
+                
+                // Download PDF
+                document.getElementById('downloadPdf').addEventListener('click', async () => {
+                    const element = document.getElementById('testPreview');
+                    if (!element) return;
+                    
+                    try {
+                        // Get page size settings
+                        const pageWidth = parseFloat(pageWidthInput.value);
+                        const pageHeight = parseFloat(pageHeightInput.value);
+                        const widthUnit = widthUnitSelect.value;
+                        const heightUnit = heightUnitSelect.value;
+                        const orientation = document.querySelector('input[name="orientation"]:checked').value;
+                        
+                        // Convert to pixels for html2canvas
+                        const widthPx = widthUnit === 'mm' ? pageWidth * 3.78 : pageWidth;
+                        const heightPx = heightUnit === 'mm' ? pageHeight * 3.78 : pageHeight;
+                        
+                        // Create a temporary container for the PDF generation
+                        const tempContainer = document.createElement('div');
+                        tempContainer.style.position = 'absolute';
+                        tempContainer.style.left = '-9999px';
+                        tempContainer.style.width = `${pageWidth}${widthUnit}`;
+                        tempContainer.style.minHeight = `${pageHeight}${heightUnit}`;
+                        const clone = element.cloneNode(true);
+                        tempContainer.appendChild(clone);
+                        document.body.appendChild(tempContainer);
+                        
+                        const canvas = await html2canvas(clone, {
+                            scale: 2,
+                            logging: false,
+                            useCORS: true,
+                            scrollX: 0,
+                            scrollY: 0,
+                            width: widthPx,
+                            height: heightPx,
+                            windowWidth: widthPx,
+                            windowHeight: heightPx
+                        });
+                        
+                        const imgData = canvas.toDataURL('image/png');
+                        
+                        // Create PDF with correct orientation
+                        const pdf = new jsPDF(
+                            orientation === 'portrait' ? 'p' : 'l',
+                            'mm',
+                            [widthUnit === 'mm' ? pageWidth : pageWidth / 3.78, 
+                             heightUnit === 'mm' ? pageHeight : pageHeight / 3.78]
+                        );
+                        
+                        // Add image to PDF
+                        pdf.addImage(imgData, 'PNG', 0, 0, 
+                            widthUnit === 'mm' ? pageWidth : pageWidth / 3.78,
+                            heightUnit === 'mm' ? pageHeight : pageHeight / 3.78
+                        );
+                        
+                        // Save the PDF
+                        pdf.save('test.pdf');
+                        
+                        // Clean up
+                        document.body.removeChild(tempContainer);
+                    } catch (error) {
+                        console.error('Error generating PDF:', error);
+                        alert('Error generating PDF. Please try again.');
+                    }
+                });
+                
+                // Initialize
+                updateQuestionsTable();
+            } else {
+                console.error('jsPDF library failed to load');
+                alert('Error loading PDF generator. Please refresh the page.');
+            }
+        });
+    </script>
+</body>
+</html>
